@@ -12,6 +12,7 @@ public class Response {
     private SystemsName systemsName;
     private String systemTime;
     private Codes code;
+    private Double annualBonus;
     private ErrorCodes errorCode;
     private ErrorMessages errorMessage;
 }
