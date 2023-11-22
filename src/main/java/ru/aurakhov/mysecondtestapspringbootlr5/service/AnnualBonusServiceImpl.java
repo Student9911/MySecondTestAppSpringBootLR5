@@ -17,10 +17,14 @@ public class AnnualBonusServiceImpl implements AnnualBonusService {
 
         if (positions.isManager()) {
             System.out.println("isManager = true");
-            return salary * bonus * daysInQuarter() * positions.getPositionCoefficient() / workDay;
+            double result = salary * bonus * daysInQuarter() * positions.getPositionCoefficient() / workDay;
+            System.out.println("Квартальная премия для " + positions + " = " + result);
+            return result;
+
 
         }
-        System.out.println("isManager = false");
+        System.out.println("isManager = false\n" +
+                "квартальная премия не предусмотрена для: " + positions);
         return 0.0;
     }
 

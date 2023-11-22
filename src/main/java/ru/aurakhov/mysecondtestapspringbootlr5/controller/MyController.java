@@ -11,10 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.aurakhov.mysecondtestapspringbootlr5.exception.UnsupportedCodeException;
 import ru.aurakhov.mysecondtestapspringbootlr5.exception.ValidationFailedException;
 import ru.aurakhov.mysecondtestapspringbootlr5.model.*;
-import ru.aurakhov.mysecondtestapspringbootlr5.service.ModifyRequestService;
-import ru.aurakhov.mysecondtestapspringbootlr5.service.ModifyResponseService;
-import ru.aurakhov.mysecondtestapspringbootlr5.service.UnsupportedCodeService;
-import ru.aurakhov.mysecondtestapspringbootlr5.service.ValidationService;
+import ru.aurakhov.mysecondtestapspringbootlr5.service.*;
 import ru.aurakhov.mysecondtestapspringbootlr5.util.DateTimeUtil;
 
 import javax.validation.Valid;
@@ -27,9 +24,7 @@ public class MyController {
 
     private final ValidationService validationService;
     private final UnsupportedCodeService unsupportedCodeService;
-
     private final List<ModifyResponseService> modifyResponseService;
-
     private final List<ModifyRequestService> modifyRequestService;
 
     @Autowired
@@ -37,21 +32,17 @@ public class MyController {
                         UnsupportedCodeService unsupportedCodeService,
                         List<ModifyResponseService> modifyResponseService,
                         List<ModifyRequestService> modifyRequestService) {
-
         this.validationService = validationService;
         this.unsupportedCodeService = unsupportedCodeService;
         this.modifyResponseService = modifyResponseService;
         this.modifyRequestService = modifyRequestService;
-    }
 
+    }
 
     @PostMapping(value = "/feedback")
     public ResponseEntity<Response> feedback(@Valid @RequestBody Request request,
                                              BindingResult bindingResult) {
-
-
         log.info("request: {}", request);
-
 
         Response response = Response.builder()
                 .uid(request.getUid())
@@ -62,36 +53,49 @@ public class MyController {
                 .errorCode(ErrorCodes.EMPTY)
                 .errorMessage(ErrorMessages.EMPTY)
                 .build();
+
         try {
             unsupportedCodeService.isValid(request.getUid());
         } catch (UnsupportedCodeException e) {
-            response.setCode(Codes.FAILED);
-            response.setErrorCode(ErrorCodes.UNSUPPORTED_EXCEPTION);
-            response.setErrorMessage(ErrorMessages.UNSUPPORTED);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return handleException(response, Codes.FAILED, ErrorCodes.UNSUPPORTED_EXCEPTION,
+                    ErrorMessages.UNSUPPORTED, HttpStatus.BAD_REQUEST);
         }
+
         try {
             validationService.isValid(bindingResult);
         } catch (ValidationFailedException e) {
-            response.setCode(Codes.FAILED);
-            response.setErrorCode(ErrorCodes.VALIDATION_EXCEPTION);
-            response.setErrorMessage(ErrorMessages.VALIDATION);
-            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+            return handleException(response, Codes.FAILED, ErrorCodes.VALIDATION_EXCEPTION,
+                    ErrorMessages.VALIDATION, HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            response.setCode(Codes.FAILED);
-            response.setErrorCode(ErrorCodes.UNKNOWN_EXCEPTION);
-            response.setErrorMessage(ErrorMessages.UNKNOWN);
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-
-        }
-        for (ModifyResponseService servResp : modifyResponseService) {
-            servResp.modify(response);
-        }
-        for (ModifyRequestService serv : modifyRequestService) {
-            serv.modify(request);
+            return handleException(response, Codes.FAILED, ErrorCodes.UNKNOWN_EXCEPTION,
+                    ErrorMessages.UNKNOWN, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+        modifyResponse(response);
+        modifyRequest(request);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    private ResponseEntity<Response> handleException(Response response, Codes code, ErrorCodes errorCode,
+                                                     ErrorMessages errorMessage, HttpStatus status) {
+        response.setCode(code);
+        response.setErrorCode(errorCode);
+        response.setErrorMessage(errorMessage);
+        return new ResponseEntity<>(response, status);
+    }
+
+    private void modifyResponse(Response response) {
+        for (ModifyResponseService service : modifyResponseService) {
+            service.modify(response);
+        }
+    }
+
+    private void modifyRequest(Request request) {
+        for (ModifyRequestService service : modifyRequestService) {
+            service.modify(request);
+        }
+    }
 }
+
+

@@ -25,13 +25,13 @@ public class ModifySystemNameRequestService implements ModifyRequestService{
 
         log.info("из ModifySystemNameRequestService после изменения имя сервиса" + request);
 
-        HttpEntity<Request> httpEntity = new HttpEntity<>(request);
+       /* HttpEntity<Request> httpEntity = new HttpEntity<>(request);*/
 
-        new RestTemplate().exchange("http://localhost:8084/feedback",
+       /* new RestTemplate().exchange("http://localhost:8084/feedback",
                 HttpMethod.POST,
                 httpEntity,
                 new ParameterizedTypeReference<>() {
-                });
+                });*/
 
     }
 }

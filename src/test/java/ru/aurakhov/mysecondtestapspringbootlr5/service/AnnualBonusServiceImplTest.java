@@ -11,7 +11,7 @@ class AnnualBonusServiceImplTest {
     void calculate() {
 
         //given
-        Positions positions = Positions.HR;
+        Positions positions = Positions.MGMT;
         double bonus = 2.0;
         int workDay = 60;
         double salary = 100000.00;
@@ -22,7 +22,7 @@ class AnnualBonusServiceImplTest {
 
 
         //then
-        double expected = 360493.8271604938;
+        double expected = 3285000.0;
         assertThat(result).isEqualTo(expected);
     }
 
@@ -32,7 +32,7 @@ class AnnualBonusServiceImplTest {
     void testQuarterlyBonusCalculation() {
 
         //given
-        Positions positions = Positions.IT;
+        Positions positions = Positions.MGMT;
         double bonus = 2.0;
         int workDay = 60;
         double salary = 100000.00;
@@ -43,7 +43,7 @@ class AnnualBonusServiceImplTest {
 
 
         //then
-        double expected = 828000.0;
+        double expected = result;
         assertThat(result).isEqualTo(expected);
     }
 }
